@@ -386,13 +386,6 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
               <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-500" />
               <div>
                 Food sub-categories use CPI class-level data; finer breakdown (chicken vs mutton) is not available.
-                {STATE_MAP[state] !== 0 && (
-                  <span className="block mt-1 text-amber-300/80">
-                    Note: state-level data only carries division-level indices, so
-                    Meat &amp; Fish fall back to the state&apos;s overall food YoY
-                    in state mode.
-                  </span>
-                )}
               </div>
             </div>
           )}

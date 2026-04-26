@@ -28,13 +28,20 @@ export async function computeForState(
     let curIndexTotal = 0;
     let priorIndexTotal = 0;
     let found = false;
-    for (const { subgroup, split } of cat.subgroups) {
-      const curDiv = current.divisions.find((d) => d.key === subgroup);
-      const priorDiv = prior.divisions.find((d) => d.key === subgroup);
-      if (curDiv?.index != null && priorDiv?.index != null && priorDiv.index > 0) {
-        curIndexTotal += split * curDiv.index;
-        priorIndexTotal += split * priorDiv.index;
-        found = true;
+
+    if (cat.foodClass && current.foodClasses?.[cat.foodClass]?.index != null && prior.foodClasses?.[cat.foodClass]?.index != null && prior.foodClasses[cat.foodClass].index > 0) {
+      curIndexTotal = current.foodClasses[cat.foodClass].index;
+      priorIndexTotal = prior.foodClasses[cat.foodClass].index;
+      found = true;
+    } else {
+      for (const { subgroup, split } of cat.subgroups) {
+        const curDiv = current.divisions.find((d) => d.key === subgroup);
+        const priorDiv = prior.divisions.find((d) => d.key === subgroup);
+        if (curDiv?.index != null && priorDiv?.index != null && priorDiv.index > 0) {
+          curIndexTotal += split * curDiv.index;
+          priorIndexTotal += split * priorDiv.index;
+          found = true;
+        }
       }
     }
     

@@ -1,5 +1,5 @@
 import { fetchCpiMonth } from "@/lib/cpi/sources/mospi-api";
-import { canonicalizeRow, pickIndexForSubgroup, pickHeadline, SUBGROUP_SPECS } from "@/lib/cpi/transform";
+import { canonicalizeRow, pickIndexForSubgroup, pickHeadline, SUBGROUP_SPECS, FOOD_CLASS_CODE_RE } from "@/lib/cpi/transform";
 import type { MonthKey, Sector } from "@/lib/cpi/types";
 
 const SECTOR_MAP: Record<Sector, string> = { combined: "3", urban: "2", rural: "1" };
@@ -8,6 +8,7 @@ export interface StateDivisionData {
   generalIndex: number | null;
   generalInflation: number | null;
   divisions: Array<{ key: string; index: number; yoy: number | null }>;
+  foodClasses?: Record<string, { index: number; yoy: number | null }>;
 }
 
 export async function fetchStateDivisions(
@@ -46,10 +47,21 @@ export async function fetchStateDivisions(
     }
   }
 
+  const foodClasses: Record<string, { index: number; yoy: number | null }> = {};
+  for (const r of sectorRows) {
+    if (r.code && r.className && FOOD_CLASS_CODE_RE.test(r.code)) {
+      foodClasses[r.code] = {
+        index: r.indexValue,
+        yoy: r.inflationPct != null ? r.inflationPct / 100 : null,
+      };
+    }
+  }
+
   return {
     generalIndex: headline.index,
     generalInflation: headline.inflation != null ? headline.inflation / 100 : null,
     divisions,
+    foodClasses,
   };
 }
 
