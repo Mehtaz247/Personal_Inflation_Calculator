@@ -1,5 +1,7 @@
 "use client";
 
+import { Info } from "lucide-react";
+
 interface Point { month: string; personal: number | null; official: number }
 
 export default function TrendChart({ data }: { data: Point[] }) {
@@ -74,13 +76,24 @@ export default function TrendChart({ data }: { data: Point[] }) {
       </div>
       <p className="mb-3 text-[11px] text-zinc-500">
         Last {data.length} months · YoY %
-        {personalNote && (
-          <>
-            {" "}· personal series starts {shortMonth(personalPoints[0]?.month ?? "")} (division-level
-            CPI under base 2024=100 only available from Jan 2025)
-          </>
-        )}
       </p>
+      {personalNote && (
+        <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-900/40 bg-amber-950/20 px-3 py-2 text-xs text-amber-200">
+          <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-400" />
+          <div>
+            <span className="font-medium text-amber-100">
+              Personal inflation only plotted from {shortMonth(personalPoints[0]?.month ?? "")}
+              {personalPoints.length > 0 &&
+                ` (${personalPoints.length} of ${data.length} months)`}
+              .
+            </span>{" "}
+            MoSPI&apos;s base-2024 CPI series only publishes division-level (COICOP) indices
+            from Jan 2025 onward, and YoY needs the same month a year earlier — so earlier
+            months can&apos;t be computed and are left out of the green line. The dashed
+            official line uses the general index, which has a longer history.
+          </div>
+        </div>
+      )}
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
         {yTicks.map((t, i) => (
           <g key={i}>

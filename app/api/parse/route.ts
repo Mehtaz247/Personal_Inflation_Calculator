@@ -103,11 +103,16 @@ Location:
   "Delhi" or "Gurgaon-side Delhi NCR" → "NCT of Delhi"; "Hyderabad" → "Telangana";
   "Chennai" → "Tamil Nadu"; "Ahmedabad" or "Surat" → "Gujarat".
   Omit if no location is mentioned.
-- sector: One of "urban", "rural", or "combined".
-  Use "urban" for any city or town. Use "rural" only if the user explicitly mentions
-  a village or rural setting. Use "combined" if the user mentions a state without
-  specifying a city/village, or if the situation is genuinely mixed (e.g. "we split
-  time between our farm and our flat in the city"). Otherwise omit.
+- sector: REQUIRED to be one of exactly three values: "urban", "rural", or "combined"
+  (combined = Urban + Rural blended). Pick the single best fit:
+    • "urban"    → user clearly lives in a city/town/metro (e.g. "Mumbai", "Bangalore",
+                   "I work in an office in Gurgaon").
+    • "rural"    → user explicitly mentions a village, farm, or rural setting as
+                   their primary residence.
+    • "combined" → user mentions a state/UT without specifying urban-vs-rural, OR
+                   their situation is genuinely mixed (e.g. "we split time between
+                   our farm and our flat in the city"), OR no location signal at all.
+  Always emit one of these three values — do NOT omit the field.
 
 If a spending category is not mentioned, omit it or set it to 0. Only output the JSON object.
 
@@ -118,7 +123,7 @@ ${body.text}
 `;
 
     const response = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL || "gemini-3.1-flash-lite-preview",
+      model: "gemini-3.1-flash-lite-preview",
       contents: prompt,
       config: {
         responseMimeType: "application/json",

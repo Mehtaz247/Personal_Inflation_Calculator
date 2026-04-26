@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import type { ComputeResult } from "@/lib/inflation/engine";
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite-preview";
+const MODEL = "gemini-3.1-flash-lite-preview";
 
 function pct(n: number): string {
   return `${(n * 100).toFixed(2)}%`;

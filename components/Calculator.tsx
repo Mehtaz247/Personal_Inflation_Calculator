@@ -146,13 +146,13 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
         if (res.ok) {
           const data = await res.json();
           if (data.state_error) {
-            // Server fell back to All India because the MoSPI state call
-            // failed. Surface this loud-and-clear instead of silently
-            // labelling All-India numbers as the user's chosen state.
+            // MoSPI state call failed; server returned All-India numbers as
+            // a fallback. Notify the user and label the result accordingly
+            // so the chart header doesn't pretend it's their state's data.
             setStateError(data.state_error);
             setStateResult({
               ...data,
-              state: "All India (fallback)",
+              state: `${state} (All India fallback)`,
               state_code: 0,
               spending_raw: spending,
             });
@@ -160,7 +160,14 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
             setStateResult({ ...data, state, state_code: stateCode, spending_raw: spending });
           }
         } else {
-          setStateError(`MoSPI request failed (HTTP ${res.status}).`);
+          let message = `MoSPI request failed (HTTP ${res.status}).`;
+          try {
+            const errBody = await res.json();
+            if (errBody?.error) message = errBody.error;
+          } catch {
+            /* ignore */
+          }
+          setStateError(message);
           setStateResult(null);
         }
       } catch (err) {
@@ -382,6 +389,20 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
           <div className="mb-4 flex items-center gap-2 rounded-xl border border-amber-900/40 bg-amber-950/20 px-4 py-3 text-sm text-amber-300">
             <Loader2 className="h-4 w-4 animate-spin" />
             Fetching {state} CPI from the MoSPI eSankhyiki API…
+          </div>
+        )}
+        {stateError && !stateLoading && (
+          <div className="mb-4 flex items-start gap-2 rounded-xl border border-rose-800/50 bg-rose-950/40 px-4 py-3 text-sm text-rose-300">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-rose-400" />
+            <div>
+              <div className="font-medium text-rose-200">
+                Couldn&apos;t load CPI data for {state}
+              </div>
+              <div className="mt-1 text-rose-300/90">{stateError}</div>
+              <div className="mt-1 text-xs text-rose-400/80">
+                Pick a different state, switch back to All India, or try again in a moment.
+              </div>
+            </div>
           </div>
         )}
         {result ? (

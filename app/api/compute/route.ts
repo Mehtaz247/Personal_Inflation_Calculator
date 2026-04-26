@@ -28,22 +28,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ ...result, monthly_series: series });
   }
 
-  // State-level → call MoSPI API
+  // State-level → call MoSPI API. On failure we still return All-India
+  // numbers so the user gets *something*, but we tag the response with
+  // `state_error` so the UI can show an explicit notification rather than
+  // silently mislabelling the data.
   try {
     const result = await computeForState(spending, b.state_code, sector);
-    // Monthly series not available for state-level (would need 24 API calls),
-    // fall back to All India series as reference
     const series = computeMonthlySeries(spending, 24, sector);
     return NextResponse.json({ ...result, monthly_series: series });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    // Fall back to All India if state API fails
     const fallback = compute(spending, undefined, sector);
     const series = computeMonthlySeries(spending, 24, sector);
     return NextResponse.json({
       ...fallback,
       monthly_series: series,
-      state_error: `Could not fetch ${sector} CPI for state ${b.state_code}: ${message}. Showing All India data.`,
+      state_error: `Could not fetch ${sector} CPI for state ${b.state_code} from MoSPI: ${message}. Showing All India data as a fallback.`,
+      requested_state_code: b.state_code,
     });
   }
 }
