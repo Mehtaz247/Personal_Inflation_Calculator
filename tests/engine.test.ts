@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { compute, decomposeGap, computeMonthlySeries } from "@/lib/inflation/engine";
-import { headlineYoY, subgroupYoY, getLatestMonth } from "@/lib/cpi/snapshot";
+import { headlineYoY, subgroupYoY, getLatestMonth, weightedAvgYoY, getSnapshot } from "@/lib/cpi/snapshot";
 
 describe("CPI snapshot", () => {
   it("exposes a latest month", () => {
@@ -17,6 +17,15 @@ describe("CPI snapshot", () => {
     const h = headlineYoY();
     expect(Number.isFinite(h)).toBe(true);
     expect(Math.abs(h)).toBeLessThan(0.5);
+  });
+
+  it("headline YoY matches the official MoSPI headline within ±0.01pp", () => {
+    const snap = getSnapshot();
+    const officialCombined = snap.official_headline?.combined;
+    if (officialCombined != null) {
+      const computed = headlineYoY(snap.as_of_month, "combined");
+      expect(computed).toBeCloseTo(officialCombined, 3);
+    }
   });
 });
 
@@ -67,11 +76,12 @@ describe("inflation engine", () => {
 });
 
 describe("gap decomposition", () => {
-  it("sum of gap_contribution equals personal − official", () => {
+  it("sum of gap_contribution equals personal − weighted-avg official", () => {
     const spending = { food: 25000, housing: 15000, healthcare: 6000, education: 4000, transport: 5000 };
     const r = compute(spending);
     const sum = r.gap_decomposition.reduce((s, x) => s + x.gap_contribution, 0);
-    expect(sum).toBeCloseTo(r.gap, 6);
+    const weightedAvgGap = r.personal_inflation - weightedAvgYoY();
+    expect(sum).toBeCloseTo(weightedAvgGap, 6);
   });
 
   it("decomposeGap exposes weight diffs that sum to zero across categories", () => {

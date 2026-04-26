@@ -5,7 +5,7 @@ import GapDecomposition from "./GapDecomposition";
 import TrendChart from "./TrendChart";
 
 interface MonthlyPoint { month: string; personal: number; official: number }
-type Compute = ComputeResult & { monthly_series?: MonthlyPoint[] };
+type Compute = ComputeResult & { monthly_series?: MonthlyPoint[]; state?: string };
 
 function pct(n: number, digits = 2): string {
   return `${(n * 100).toFixed(digits)}%`;
@@ -55,6 +55,9 @@ export default function Results({
           Based on monthly spending of ₹{result.total_spend.toLocaleString("en-IN")} · as of{" "}
           {formatMonth(result.as_of_month)} · CPI base {result.base_year}=100 · sector{" "}
           <span className="font-medium uppercase">{result.sector}</span>
+          {result.state && result.state !== "All India" && (
+            <> · <span className="font-medium">{result.state}</span></>
+          )}
         </p>
       </div>
 
@@ -133,20 +136,15 @@ export default function Results({
       <div className="rounded-xl border border-ink-100 bg-ink-50 px-5 py-3 text-xs text-ink-500">
         <p>
           Official MoSPI headline CPI (YoY):{" "}
-          <span className="font-semibold text-ink-700">
-            {result.official_headline != null
-              ? pct(result.official_headline)
-              : "N/A"}
-          </span>
-          {" · "}
-          Recomputed weighted avg:{" "}
-          <span className="font-semibold text-ink-700">{pct(result.official_inflation)}</span>
+          <span className="font-semibold text-ink-700">{pct(officialDisplay)}</span>
           {" · "}
           Your personal rate:{" "}
           <span className="font-semibold text-ink-700">{pct(result.personal_inflation)}</span>
         </p>
         <p className="mt-1 italic">
-          Source: MoSPI, base {result.base_year}=100, {formatMonth(result.as_of_month)}.
+          Source: MoSPI, base {result.base_year}=100, {formatMonth(result.as_of_month)}
+          {result.state && result.state !== "All India" ? `, ${result.state}` : ""}.
+          {result.state && result.state !== "All India" && " State weights use All India basket (limitation)."}
         </p>
       </div>
     </div>

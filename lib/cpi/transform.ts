@@ -6,6 +6,7 @@ interface CanonicalRow {
   code: string | null;
   indexValue: number;
   inflationPct: number | null;
+  isGeneral: boolean;
 }
 
 interface SubgroupSpec {
@@ -83,9 +84,9 @@ export function canonicalizeRow(row: Record<string, unknown>): CanonicalRow | nu
   const inflationPct = asNumber(pickField(row, KEY_CANDIDATES.inflation));
 
   if (!division || indexValue == null) return null;
-  // Only keep top-level division rows (no group/class/sub_class/item).
-  if (subgroup || klass || subClass || item) return null;
-  return { sector, divisionName: division, code, indexValue, inflationPct };
+  const isGeneral = normalize(division).includes("cpi (general)") || normalize(division) === "general";
+  if (!isGeneral && (subgroup || klass || subClass || item)) return null;
+  return { sector, divisionName: division, code, indexValue, inflationPct, isGeneral };
 }
 
 export function pickIndexForSubgroup(rows: CanonicalRow[], spec: SubgroupSpec): number | null {
@@ -125,6 +126,7 @@ export interface BuildSnapshotInput {
 
 function buildSectorData(rowsByMonth: Record<MonthKey, CanonicalRow[]>, sector: Sector): CpiSectorData {
   const indices: Record<string, Record<MonthKey, number>> = {};
+  const general_index: Record<MonthKey, number> = {};
   for (const spec of SUBGROUP_SPECS) {
     indices[spec.key] = {};
     for (const [month, allRows] of Object.entries(rowsByMonth)) {
@@ -133,10 +135,15 @@ function buildSectorData(rowsByMonth: Record<MonthKey, CanonicalRow[]>, sector: 
       if (value != null) indices[spec.key][month as MonthKey] = round3(value);
     }
   }
+  for (const [month, allRows] of Object.entries(rowsByMonth)) {
+    const sectorRows = rowsForSector(allRows, sector);
+    const gen = sectorRows.find((r) => r.isGeneral);
+    if (gen) general_index[month as MonthKey] = round3(gen.indexValue);
+  }
   const subgroups = Object.fromEntries(
     SUBGROUP_SPECS.map((s) => [s.key, { label: s.label, weight: s.weight, code: s.code }]),
   );
-  return { subgroups, indices };
+  return { subgroups, indices, general_index };
 }
 
 export function buildSnapshot(input: BuildSnapshotInput): CpiSnapshot {

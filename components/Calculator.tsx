@@ -36,9 +36,30 @@ const PRESETS: Record<string, Partial<Record<UserCategoryKey, number>>> = {
   },
 };
 
+const STATES = [
+  "All India",
+  "Andaman And Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam",
+  "Bihar", "Chandigarh", "Chhattisgarh",
+  "Goa", "Gujarat",
+  "Haryana", "Himachal Pradesh",
+  "Jammu And Kashmir", "Jharkhand",
+  "Karnataka", "Kerala",
+  "Ladakh", "Lakshadweep",
+  "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram",
+  "Nagaland", "NCT of Delhi",
+  "Odisha",
+  "Puducherry", "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu", "Telangana", "The Dadra And Nagar Haveli And Daman And Diu", "Tripura",
+  "Uttar Pradesh", "Uttarakhand",
+  "West Bengal",
+];
+
 export default function Calculator({ categories }: { categories: CategoryDescriptor[] }) {
   const [spending, setSpending] = useState<Partial<Record<UserCategoryKey, number>>>({});
   const [sector, setSector] = useState<Sector>("combined");
+  const [state, setState] = useState("All India");
   const [result, setResult] = useState<Compute | null>(null);
   const [explanation, setExplanation] = useState<{ text: string; source: string } | null>(null);
   const [explainLoading, setExplainLoading] = useState(false);
@@ -69,7 +90,7 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
       const res = await fetch("/api/compute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spending, sector }),
+        body: JSON.stringify({ spending, sector, state }),
       });
       if (!res.ok) return;
       const data = (await res.json()) as Compute;
@@ -84,7 +105,7 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
       const res = await fetch("/api/explain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spending, sector }),
+        body: JSON.stringify({ spending, sector, state }),
       });
       if (!res.ok) return;
       const data = (await res.json()) as { text: string; source: string };
@@ -109,36 +130,53 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          {Object.keys(PRESETS).map((name) => (
+        <div className="mb-4 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {Object.keys(PRESETS).map((name) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => applyPreset(name)}
+                className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-xs font-medium text-ink-700 hover:bg-ink-100"
+              >
+                {name}
+              </button>
+            ))}
             <button
-              key={name}
               type="button"
-              onClick={() => applyPreset(name)}
-              className="rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-xs font-medium text-ink-700 hover:bg-ink-100"
+              onClick={reset}
+              className="rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-medium text-ink-600 hover:bg-ink-50"
             >
-              {name}
+              Reset
             </button>
-          ))}
-          <button
-            type="button"
-            onClick={reset}
-            className="rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-medium text-ink-600 hover:bg-ink-50"
-          >
-            Reset
-          </button>
-          <label className="ml-auto flex items-center gap-2 text-xs text-ink-600">
-            Sector
-            <select
-              value={sector}
-              onChange={(e) => { setSector(e.target.value as Sector); setResult(null); setExplanation(null); }}
-              className="rounded border border-ink-200 bg-white px-2 py-1 text-xs text-ink-800"
-            >
-              <option value="combined">Combined</option>
-              <option value="urban">Urban</option>
-              <option value="rural">Rural</option>
-            </select>
-          </label>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-xs text-ink-600">
+              State
+              <select
+                value={state}
+                onChange={(e) => { setState(e.target.value); setResult(null); setExplanation(null); }}
+                className="rounded border border-ink-200 bg-white px-2 py-1 text-xs text-ink-800"
+              >
+                {STATES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-xs text-ink-600">
+              Sector
+              <select
+                value={sector}
+                onChange={(e) => { setSector(e.target.value as Sector); setResult(null); setExplanation(null); }}
+                className="rounded border border-ink-200 bg-white px-2 py-1 text-xs text-ink-800"
+              >
+                <option value="combined">Combined</option>
+                <option value="urban">Urban</option>
+                <option value="rural">Rural</option>
+              </select>
+            </label>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

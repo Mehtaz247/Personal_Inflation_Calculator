@@ -11,6 +11,7 @@ export interface CpiSubgroupMeta {
 export interface CpiSectorData {
   subgroups: Record<string, CpiSubgroupMeta>;
   indices: Record<string, Record<MonthKey, number>>;
+  general_index?: Record<MonthKey, number>;
 }
 
 export interface CpiSnapshot {

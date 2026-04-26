@@ -42,6 +42,7 @@ export interface CpiApiQuery {
   month_code: number;
   limit?: number;
   sector?: string;
+  state_code?: number;
 }
 
 export interface CpiApiResponse {
@@ -95,7 +96,8 @@ export async function fetchCpiMonth(
     month_code: String(query.month_code),
     limit: String(limit),
   });
-  if (query.sector) params.set("sector", query.sector);
+  if (query.sector) params.set("sector_code", query.sector);
+  if (query.state_code != null) params.set("state_code", String(query.state_code));
 
   const url = `${BASE_URL}?${params.toString()}`;
   const headers: Record<string, string> = { Accept: "application/json" };

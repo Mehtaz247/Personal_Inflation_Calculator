@@ -49,6 +49,21 @@ export function headlineYoY(
 ): number {
   const sec = snapshot.sectors[sector];
   if (!sec) return 0;
+  const gi = sec.general_index;
+  if (gi) {
+    const cur = gi[month];
+    const prior = gi[shiftYear(month, -1)];
+    if (cur != null && prior != null && prior > 0) return cur / prior - 1;
+  }
+  return weightedAvgYoY(month, sector);
+}
+
+export function weightedAvgYoY(
+  month: MonthKey = snapshot.as_of_month,
+  sector: Sector = DEFAULT_SECTOR,
+): number {
+  const sec = snapshot.sectors[sector];
+  if (!sec) return 0;
   let total = 0;
   for (const [key, meta] of Object.entries(sec.subgroups)) {
     const r = subgroupYoY(key, month, sector);

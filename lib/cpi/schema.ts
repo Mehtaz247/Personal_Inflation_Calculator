@@ -13,6 +13,7 @@ const subgroupMeta = z.object({
 const sectorData = z.object({
   subgroups: z.record(z.string().min(1), subgroupMeta),
   indices: z.record(z.string().min(1), z.record(monthKey, z.number().positive())),
+  general_index: z.record(monthKey, z.number().positive()).optional(),
 });
 
 export const cpiSnapshotSchema = z
