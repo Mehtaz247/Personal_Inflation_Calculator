@@ -1,4 +1,4 @@
-# Personal Inflation Calculator (India)
+# Personal Inflation Calculator
 
 Estimate your household's *personal* inflation by reweighting official Indian CPI
 components (base **2024=100**) with your own monthly spending mix.
