@@ -38,7 +38,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   {
     key: "eating_out",
     label: "Restaurants & takeout",
-    description: "Restaurants, cafes, hoteilers, food delivery, accommodation",
+    description: "Restaurants, cafes, hotels, food delivery, accommodation",
     subgroups: [{ subgroup: "restaurants_accommodation", split: 1 }],
   },
   {
