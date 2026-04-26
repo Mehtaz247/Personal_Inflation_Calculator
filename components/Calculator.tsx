@@ -385,10 +385,7 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
             <div className="mb-6 flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-xs text-zinc-400">
               <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-500" />
               <div>
-                Meat &amp; Fish use class-level COICOP indices (codes 01.1.2 &amp;
-                01.1.3), which inflate independently from the rest of the food
-                basket. The remaining &ldquo;Food &amp; groceries&rdquo; field still
-                covers everything else (cereals, dairy, vegetables, oils, etc.).
+                Food sub-categories use CPI class-level data; finer breakdown (chicken vs mutton) is not available.
                 {STATE_MAP[state] !== 0 && (
                   <span className="block mt-1 text-amber-300/80">
                     Note: state-level data only carries division-level indices, so

@@ -1,6 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { compute, decomposeGap, computeMonthlySeries } from "@/lib/inflation/engine";
-import { headlineYoY, subgroupYoY, getLatestMonth, weightedAvgYoY, getSnapshot } from "@/lib/cpi/snapshot";
+import {
+  headlineYoY,
+  subgroupYoY,
+  getLatestMonth,
+  weightedAvgYoY,
+  getSnapshot,
+  foodClassYoY,
+} from "@/lib/cpi/snapshot";
 
 describe("CPI snapshot", () => {
   it("exposes a latest month", () => {
@@ -72,6 +79,23 @@ describe("inflation engine", () => {
     // @ts-expect-error — intentionally passing bad input
     const r = compute({ food: -1000, housing: "oops", healthcare: 5000 });
     expect(r.total_spend).toBe(5000);
+  });
+
+  it("uses class-level indices for meat/poultry when available", () => {
+    // Meat is category food_meat, points to foodClass 01.1.2.
+    // If indices are present in snapshot, its inflation should match foodClassYoY("01.1.2").
+    // If missing, it falls back to food_and_beverages.
+    const r = compute({ food_meat: 10000 });
+    const meat = r.categories.find((c) => c.key === "food_meat");
+    expect(meat).toBeDefined();
+
+    const classInfl = foodClassYoY("01.1.2");
+    if (classInfl !== null) {
+      expect(meat!.inflation).toBeCloseTo(classInfl, 6);
+    } else {
+      const foodInfl = subgroupYoY("food_and_beverages");
+      expect(meat!.inflation).toBeCloseTo(foodInfl!, 6);
+    }
   });
 });
 

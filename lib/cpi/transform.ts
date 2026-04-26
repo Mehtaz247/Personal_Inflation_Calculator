@@ -41,7 +41,7 @@ export const SUBGROUP_SPECS: SubgroupSpec[] = [
 const KEY_CANDIDATES = {
   sector:       ["sector", "geography", "area", "region"],
   division:     ["division", "group_name", "group", "groupName", "main_group", "category"],
-  subgroup:     ["subgroup_name", "sub_group_name", "sub_group", "subgroup", "subgroupName"],
+  subgroup:     ["group", "subgroup_name", "sub_group_name", "sub_group", "subgroup", "subgroupName"],
   klass:        ["class", "klass"],
   subClass:     ["sub_class", "subclass"],
   item:         ["item"],

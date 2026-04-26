@@ -47,8 +47,8 @@ function normalizeSplit(parts: Array<{ subgroup: SubgroupKey; split: number }>) 
 export const USER_CATEGORIES: UserCategory[] = [
   {
     key: "food",
-    label: "Food & groceries",
-    description: "Groceries, vegetables, dairy, beverages cooked at home",
+    label: "Veg food & groceries",
+    description: "Cereals, vegetables, dairy, fruits, oils, beverages cooked at home",
     subgroups: [{ subgroup: "food_and_beverages", split: 1 }],
   },
   {
