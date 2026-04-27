@@ -37,7 +37,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 01 ────────────────────────────────────────────────────────
   {
     key: "food",
-    label: "Food & beverages",
+    label: "Food and beverages",
     mospidivision: "Food and beverages",
     description: "Groceries, cereals, dairy, oils, fruits, vegetables, beverages prepared at home",
     subgroups: [{ subgroup: "food_and_beverages", split: 1 }],
@@ -63,7 +63,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 02 ────────────────────────────────────────────────────────
   {
     key: "tobacco_alcohol",
-    label: "Paan, tobacco & intoxicants",
+    label: "Paan, tobacco and intoxicants",
     mospidivision: "Paan, tobacco and intoxicants",
     description: "Paan, cigarettes, bidi, smokeless tobacco, alcohol, intoxicants",
     subgroups: [{ subgroup: "pan_tobacco_and_intoxicants", split: 1 }],
@@ -71,7 +71,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 03 ────────────────────────────────────────────────────────
   {
     key: "clothing",
-    label: "Clothing & footwear",
+    label: "Clothing and footwear",
     mospidivision: "Clothing and footwear",
     description: "Apparel, footwear, tailoring and repair services",
     subgroups: [{ subgroup: "clothing_and_footwear", split: 1 }],
@@ -79,7 +79,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 04 ────────────────────────────────────────────────────────
   {
     key: "housing",
-    label: "Housing, water & energy",
+    label: "Housing, water, electricity, gas and other fuels",
     mospidivision: "Housing, water, electricity, gas and other fuels",
     description: "Rent (incl. imputed rent if you own), water supply, electricity, cooking gas & other fuels — exclude vehicle fuel",
     subgroups: [{ subgroup: "housing_utilities", split: 1 }],
@@ -87,7 +87,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 05 ────────────────────────────────────────────────────────
   {
     key: "furnishings",
-    label: "Furnishings & household",
+    label: "Furnishings, household equipment and routine household maintenance",
     mospidivision: "Furnishings, household equipment and routine household maintenance",
     description: "Furniture, home appliances, cleaning products, domestic services",
     subgroups: [{ subgroup: "furnishings_household", split: 1 }],
@@ -111,7 +111,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 08 ────────────────────────────────────────────────────────
   {
     key: "communication",
-    label: "Information & communication",
+    label: "Information and communication",
     mospidivision: "Information and communication",
     description: "Mobile, broadband, internet, postal services, devices",
     subgroups: [{ subgroup: "information_communication", split: 1 }],
@@ -119,7 +119,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 09 ────────────────────────────────────────────────────────
   {
     key: "recreation",
-    label: "Recreation, sport & culture",
+    label: "Recreation, sport and culture",
     mospidivision: "Recreation, sport and culture",
     description: "OTT, movies, sports, hobbies, newspapers, books, cultural events",
     subgroups: [{ subgroup: "recreation_culture", split: 1 }],
@@ -127,7 +127,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 10 ────────────────────────────────────────────────────────
   {
     key: "education",
-    label: "Education",
+    label: "Education services",
     mospidivision: "Education services",
     description: "School / college fees, tuitions, books & stationery",
     subgroups: [{ subgroup: "education_services", split: 1 }],
@@ -135,7 +135,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 11 ────────────────────────────────────────────────────────
   {
     key: "eating_out",
-    label: "Restaurants & accommodation",
+    label: "Restaurants and accommodation services",
     mospidivision: "Restaurants and accommodation services",
     description: "Restaurants, cafes, dhabas, food delivery, hotels, guest houses",
     subgroups: [{ subgroup: "restaurants_accommodation", split: 1 }],
@@ -143,7 +143,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 12 ────────────────────────────────────────────────────────
   {
     key: "personal_care",
-    label: "Personal care & misc",
+    label: "Personal care, social protection and miscellaneous goods and services",
     mospidivision: "Personal care, social protection and miscellaneous goods and services",
     description: "Toiletries, grooming, haircuts, personal hygiene, social protection, miscellaneous",
     subgroups: [{ subgroup: "personal_care_misc", split: 1 }],
