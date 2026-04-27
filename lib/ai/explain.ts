@@ -128,7 +128,7 @@ export async function generateExplanation(result: ComputeResult): Promise<{
         parts: [{ text: `${systemPrompt}\n\nFacts:\n${JSON.stringify(facts, null, 2)}` }],
       },
     ],
-    config: { maxOutputTokens: 400, temperature: 0.4 },
+    config: { maxOutputTokens: 400, temperature: 0.9 },
   }));
 
   const text = (response.text ?? "").trim();
