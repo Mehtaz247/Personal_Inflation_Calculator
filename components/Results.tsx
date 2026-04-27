@@ -37,6 +37,7 @@ export default function Results({ result }: { result: Compute }) {
         ? "text-emerald-400"
         : "text-zinc-500";
 
+  const isDeflation = result.personal_inflation < -0.001;
   const active = result.categories.filter((c) => c.weight > 0);
   const maxAbsContribution = Math.max(
     ...active.map((c) => Math.abs(c.contribution)),
@@ -96,10 +97,10 @@ export default function Results({ result }: { result: Compute }) {
         transition={{ duration: 0.4 }}
       >
         <div ref={receiptRef} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-2xl backdrop-blur-md relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-emerald-300 opacity-50" />
+          <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r opacity-50 ${isDeflation ? "from-blue-500 to-cyan-300" : "from-emerald-500 to-emerald-300"}`} />
           <div className="flex items-start justify-between">
             <div className="grid grid-cols-3 gap-6 w-full">
-              <Stat label="Your inflation" value={pct(result.personal_inflation)} emphasis />
+              <Stat label="Your inflation" value={pct(result.personal_inflation)} emphasis valueClassName={isDeflation ? "text-blue-300" : undefined} />
               <Stat label="Official CPI" value={pct(officialDisplay)} />
               <Stat label="Gap" value={pp(displayGap)} valueClassName={gapColor} />
             </div>
@@ -128,21 +129,27 @@ export default function Results({ result }: { result: Compute }) {
           <h3 className="mb-4 text-sm font-semibold text-zinc-100">What This Means For Your Wallet</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4">
-              <div className="text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Extra cost per month</div>
-              <div className="text-2xl font-bold text-rose-400">
-                ₹{Math.round(result.total_spend * result.personal_inflation / 12).toLocaleString("en-IN")}
+              <div className="text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">
+                {isDeflation ? "Monthly price drop" : "Extra cost per month"}
+              </div>
+              <div className={`text-2xl font-bold ${isDeflation ? "text-emerald-400" : "text-rose-400"}`}>
+                ₹{Math.abs(Math.round(result.total_spend * result.personal_inflation / 12)).toLocaleString("en-IN")}
               </div>
               <div className="mt-1 text-xs text-zinc-500">
-                Your basket costs this much more each month than last year
+                {isDeflation
+                  ? "Your basket costs this much less each month than last year"
+                  : "Your basket costs this much more each month than last year"}
               </div>
             </div>
             <div className="rounded-xl bg-zinc-950 border border-zinc-800 p-4">
               <div className="text-xs font-medium uppercase tracking-wider text-zinc-500 mb-1">Your ₹{Math.round(result.total_spend / 1000)}k is now worth</div>
-              <div className="text-2xl font-bold text-amber-400">
+              <div className={`text-2xl font-bold ${isDeflation ? "text-emerald-400" : "text-amber-400"}`}>
                 ₹{Math.round(result.total_spend / (1 + result.personal_inflation)).toLocaleString("en-IN")}
               </div>
               <div className="mt-1 text-xs text-zinc-500">
-                In last year&apos;s rupees — that&apos;s ₹{Math.round(result.total_spend - result.total_spend / (1 + result.personal_inflation)).toLocaleString("en-IN")} of lost purchasing power
+                {isDeflation
+                  ? <>In last year&apos;s rupees — that&apos;s ₹{Math.abs(Math.round(result.total_spend - result.total_spend / (1 + result.personal_inflation))).toLocaleString("en-IN")} of <span className="text-emerald-400">gained</span> purchasing power</>
+                  : <>In last year&apos;s rupees — that&apos;s ₹{Math.round(result.total_spend - result.total_spend / (1 + result.personal_inflation)).toLocaleString("en-IN")} of lost purchasing power</>}
               </div>
             </div>
           </div>
@@ -224,7 +231,7 @@ export default function Results({ result }: { result: Compute }) {
 
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6 shadow-sm">
         <h3 className="mb-4 text-sm font-semibold text-zinc-100">
-          Where your inflation comes from
+          Inflation breakdown by category
         </h3>
         <ul className="space-y-4">
           {active
@@ -232,13 +239,14 @@ export default function Results({ result }: { result: Compute }) {
             .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution))
             .map((c) => {
               const width = Math.max(4, (Math.abs(c.contribution) / maxAbsContribution) * 100);
+              const barColor = c.contribution < 0 ? "bg-blue-500" : "bg-rose-400";
               return (
                 <li key={c.key} className="text-sm">
                   <div className="mb-1 flex items-baseline justify-between text-zinc-300">
                     <span className="font-medium">{c.label}</span>
                     <span className="tabular-nums text-zinc-500">
                       {pct(c.weight, 0)} of spend · {pct(c.inflation)} YoY ·{" "}
-                      <span className="font-medium text-zinc-100">{pp(c.contribution)}</span>
+                      <span className={`font-medium ${c.contribution < 0 ? "text-blue-300" : "text-zinc-100"}`}>{pp(c.contribution)}</span>
                     </span>
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
@@ -246,7 +254,7 @@ export default function Results({ result }: { result: Compute }) {
                       initial={{ width: 0 }}
                       animate={{ width: `${width}%` }}
                       transition={{ duration: 0.8, ease: "easeOut" }}
-                      className="h-full rounded-full bg-emerald-500"
+                      className={`h-full rounded-full ${barColor}`}
                     />
                   </div>
                 </li>
