@@ -69,25 +69,25 @@ const PRESETS: Preset[] = [
     label: "Urban Professional",
     icon: <Briefcase className="h-4 w-4" />,
     description: "₹65k/mo · rent-heavy, eats out often",
-    spending: { food: 8000, eating_out: 6000, housing: 25000, transport: 5000, communication: 1500, healthcare: 3000, education: 0, clothing: 3000, household_personal: 4000, entertainment: 5000, tobacco_alcohol: 0 },
+    spending: { food: 8000, eating_out: 6000, housing: 25000, transport: 5000, communication: 1500, healthcare: 3000, education: 0, clothing: 3000, furnishings: 1500, personal_care: 2500, recreation: 5000, tobacco_alcohol: 0 },
   },
   {
     label: "Middle-Class Family",
     icon: <Heart className="h-4 w-4" />,
     description: "₹45k/mo · kids in school, home-cooking",
-    spending: { food: 12000, eating_out: 2000, housing: 10000, transport: 4000, communication: 1000, healthcare: 3000, education: 8000, clothing: 2000, household_personal: 2000, entertainment: 1000, tobacco_alcohol: 0 },
+    spending: { food: 12000, eating_out: 2000, housing: 10000, transport: 4000, communication: 1000, healthcare: 3000, education: 8000, clothing: 2000, furnishings: 800, personal_care: 1200, recreation: 1000, tobacco_alcohol: 0 },
   },
   {
     label: "Student",
     icon: <GraduationCap className="h-4 w-4" />,
     description: "₹18k/mo · hostel, food, transport",
-    spending: { food: 4000, eating_out: 3000, housing: 5000, transport: 2000, communication: 500, healthcare: 500, education: 1500, clothing: 500, household_personal: 500, entertainment: 500, tobacco_alcohol: 0 },
+    spending: { food: 4000, eating_out: 3000, housing: 5000, transport: 2000, communication: 500, healthcare: 500, education: 1500, clothing: 500, furnishings: 200, personal_care: 300, recreation: 500, tobacco_alcohol: 0 },
   },
   {
     label: "Retired Couple",
     icon: <User className="h-4 w-4" />,
     description: "₹35k/mo · healthcare-heavy, own home",
-    spending: { food: 10000, eating_out: 1000, housing: 5000, transport: 2000, communication: 800, healthcare: 10000, education: 0, clothing: 1500, household_personal: 2000, entertainment: 1500, tobacco_alcohol: 1200 },
+    spending: { food: 10000, eating_out: 1000, housing: 5000, transport: 2000, communication: 800, healthcare: 10000, education: 0, clothing: 1500, furnishings: 800, personal_care: 1200, recreation: 1500, tobacco_alcohol: 1200 },
   },
 ];
 
@@ -112,9 +112,9 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
         engine via stale keys. ── */
   const effectiveSpending = useMemo<Partial<Record<UserCategoryKey, number>>>(() => {
     if (diet === "non-veg") return spending;
-    const { food_meat, food_seafood, ...rest } = spending;
-    void food_meat;
-    void food_seafood;
+    // Drop non-veg sub-categories so they don't contribute to the engine.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { food_meat: _m, food_seafood: _s, ...rest } = spending;
     return rest;
   }, [spending, diet]);
 
@@ -219,13 +219,16 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
           if (data.error) {
             setParseError(data.error);
           } else {
-            const { state: parsedState, sector: parsedSector, ...spendingFields } = data ?? {};
+            const { state: parsedState, sector: parsedSector, diet: parsedDiet, ...spendingFields } = data ?? {};
             setSpending(spendingFields);
             if (typeof parsedState === "string" && parsedState in STATE_MAP) {
               setState(parsedState);
             }
             if (parsedSector === "urban" || parsedSector === "rural" || parsedSector === "combined") {
               setSector(parsedSector);
+            }
+            if (parsedDiet === "veg" || parsedDiet === "non-veg") {
+              setDiet(parsedDiet);
             }
             setAiText("");
           }

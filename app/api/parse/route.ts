@@ -49,19 +49,32 @@ const STATE_NAMES = [
 ] as const;
 
 const responseSchema = z.object({
+  // Division 01
   food: z.number().optional(),
   food_meat: z.number().optional(),
   food_seafood: z.number().optional(),
-  eating_out: z.number().optional(),
-  housing: z.number().optional(),
-  transport: z.number().optional(),
-  communication: z.number().optional(),
-  healthcare: z.number().optional(),
-  education: z.number().optional(),
-  clothing: z.number().optional(),
-  household_personal: z.number().optional(),
-  entertainment: z.number().optional(),
+  // Division 02
   tobacco_alcohol: z.number().optional(),
+  // Division 03
+  clothing: z.number().optional(),
+  // Division 04
+  housing: z.number().optional(),
+  // Division 05
+  furnishings: z.number().optional(),
+  // Division 06
+  healthcare: z.number().optional(),
+  // Division 07
+  transport: z.number().optional(),
+  // Division 08
+  communication: z.number().optional(),
+  // Division 09
+  recreation: z.number().optional(),
+  // Division 10
+  education: z.number().optional(),
+  // Division 11
+  eating_out: z.number().optional(),
+  // Division 12
+  personal_care: z.number().optional(),
   state: z.enum(STATE_NAMES).optional(),
   sector: z.enum(SECTOR_VALUES).optional(),
   diet: z.enum(["veg", "non-veg"]).optional(),
@@ -96,16 +109,17 @@ Spending categories (all amounts in INR per month):
   explicit amount or proportion for meat/poultry.
 - food_seafood: Fish, prawns, crab, other seafood. Only emit when the
   user is non-vegetarian and mentions fish/seafood spend.
-- eating_out: Restaurants, cafes, food delivery, hotels
-- housing: Rent (incl. imputed rent if owned), water, electricity, cooking gas
-- transport: Vehicle fuel (petrol/diesel), public transport, taxi, vehicle upkeep
-- communication: Mobile, broadband, internet, postal
-- healthcare: Medicines, doctor fees, hospitals, insurance
-- education: School/college fees, books, tuitions
-- clothing: Apparel, footwear, tailoring
-- household_personal: Furnishings, toiletries, grooming
-- entertainment: Movies, OTT, sports, hobbies, events
-- tobacco_alcohol: Paan, tobacco, intoxicants
+- eating_out: Restaurants, cafes, dhabas, food delivery, hotels (MoSPI div 11)
+- housing: Rent (incl. imputed rent if owned), water, electricity, cooking gas (div 04)
+- furnishings: Furniture, home appliances, cleaning products, domestic help (div 05)
+- transport: Vehicle fuel (petrol/diesel), public transport, taxi, vehicle upkeep (div 07)
+- communication: Mobile, broadband, internet, postal services (div 08)
+- healthcare: Medicines, doctor fees, hospitals, insurance (div 06)
+- education: School/college fees, books, tuitions (div 10)
+- clothing: Apparel, footwear, tailoring (div 03)
+- personal_care: Toiletries, grooming, haircuts, hygiene, personal-care services (div 12)
+- recreation: OTT, movies, sports, hobbies, books, cultural events (div 09)
+- tobacco_alcohol: Paan, cigarettes, bidi, tobacco, alcohol, intoxicants (div 02)
 
 Location:
 - state: Map any city or state mentioned to its Indian state/UT name. Use one of:
@@ -131,7 +145,7 @@ Diet:
   describes themselves as non-vegetarian. Otherwise default to "veg".
   When diet is "non-veg" and the user gives a single combined "food"
   amount with no breakdown, you may make a sensible split: roughly 70%
-  to "food", 20% to "food_meat", 10% to "food_seafood" for a typical
+  to food, 20% to food_meat, 10% to food_seafood for a typical
   Indian non-veg household — but only if the user clearly signals they
   eat both meat and fish. If they only mention meat OR fish, skip the
   other field.

@@ -1,60 +1,52 @@
 import type { SubgroupKey } from "./types";
-import { SUBGROUP_SPECS } from "./transform";
 
 export type UserCategoryKey =
   | "food"
   | "food_meat"
   | "food_seafood"
-  | "eating_out"
+  | "tobacco_alcohol"
+  | "clothing"
   | "housing"
+  | "furnishings"
+  | "healthcare"
   | "transport"
   | "communication"
-  | "healthcare"
+  | "recreation"
   | "education"
-  | "clothing"
-  | "household_personal"
-  | "entertainment"
-  | "tobacco_alcohol";
+  | "eating_out"
+  | "personal_care";
 
 export interface UserCategory {
   key: UserCategoryKey;
   label: string;
+  /** MoSPI COICOP 2018 division name this maps to */
+  mospidivision: string;
   description: string;
   subgroups: Array<{ subgroup: SubgroupKey; split: number }>;
   /**
-   * Optional COICOP class code (e.g. "01.1.2") that overrides the
-   * subgroup-level mapping with class-level food data when available.
-   * If the class indices aren't in the snapshot (or for state-level
-   * fetches that don't include class rows), the engine falls back to
-   * the parent `subgroups` mapping.
+   * Optional COICOP class code (e.g. "01.1.2") — overrides division-level
+   * data with class-level food indices when available. Falls back to the
+   * parent subgroup if class data is missing (e.g. in state mode).
    */
   foodClass?: string;
-  /**
-   * Categories tagged "non-veg" are only relevant when the user has
-   * indicated a non-vegetarian diet. The Calculator UI hides them by
-   * default and exposes them under a Veg/Non-veg toggle.
-   */
+  /** Categories tagged "non-veg" are hidden unless the user selects Non-veg diet. */
   dietary?: "non-veg";
 }
 
-const W = Object.fromEntries(SUBGROUP_SPECS.map((s) => [s.key, s.weight])) as Record<SubgroupKey, number>;
-
-function normalizeSplit(parts: Array<{ subgroup: SubgroupKey; split: number }>) {
-  const total = parts.reduce((s, p) => s + p.split, 0);
-  return parts.map((p) => ({ subgroup: p.subgroup, split: p.split / total }));
-}
-
 export const USER_CATEGORIES: UserCategory[] = [
+  // ── Division 01 ────────────────────────────────────────────────────────
   {
     key: "food",
-    label: "Veg food & groceries",
-    description: "Cereals, vegetables, dairy, fruits, oils, beverages cooked at home",
+    label: "Food & beverages",
+    mospidivision: "Food and beverages",
+    description: "Groceries, cereals, dairy, oils, fruits, vegetables, beverages prepared at home",
     subgroups: [{ subgroup: "food_and_beverages", split: 1 }],
   },
   {
     key: "food_meat",
     label: "Meat & poultry",
-    description: "Chicken, mutton, beef, pork — fresh, chilled or frozen (MoSPI groups all meat together at this level)",
+    mospidivision: "Food and beverages",
+    description: "Chicken, mutton, beef, pork — fresh, chilled or frozen (MoSPI codes all meat under 01.1.2)",
     subgroups: [{ subgroup: "food_and_beverages", split: 1 }],
     foodClass: "01.1.2",
     dietary: "non-veg",
@@ -62,73 +54,99 @@ export const USER_CATEGORIES: UserCategory[] = [
   {
     key: "food_seafood",
     label: "Fish & seafood",
-    description: "Fish, prawns, crab — fresh, chilled or frozen",
+    mospidivision: "Food and beverages",
+    description: "Fish, prawns, crab and other seafood (COICOP class 01.1.3)",
     subgroups: [{ subgroup: "food_and_beverages", split: 1 }],
     foodClass: "01.1.3",
     dietary: "non-veg",
   },
+  // ── Division 02 ────────────────────────────────────────────────────────
   {
-    key: "eating_out",
-    label: "Restaurants & takeout",
-    description: "Restaurants, cafes, hotels, food delivery, accommodation",
-    subgroups: [{ subgroup: "restaurants_accommodation", split: 1 }],
+    key: "tobacco_alcohol",
+    label: "Paan, tobacco & intoxicants",
+    mospidivision: "Paan, tobacco and intoxicants",
+    description: "Paan, cigarettes, bidi, smokeless tobacco, alcohol, intoxicants",
+    subgroups: [{ subgroup: "pan_tobacco_and_intoxicants", split: 1 }],
   },
-  {
-    key: "housing",
-    label: "Housing & utilities",
-    description: "Rent (incl. imputed rent if you own), water, electricity, cooking gas — do not include vehicle fuel",
-    subgroups: [{ subgroup: "housing_utilities", split: 1 }],
-  },
-  {
-    key: "transport",
-    label: "Transport",
-    description: "Vehicle fuel (petrol/diesel), public transport, taxi, vehicle upkeep",
-    subgroups: [{ subgroup: "transport", split: 1 }],
-  },
-  {
-    key: "communication",
-    label: "Phone & internet",
-    description: "Mobile, broadband, postal — information & communication services",
-    subgroups: [{ subgroup: "information_communication", split: 1 }],
-  },
-  {
-    key: "healthcare",
-    label: "Healthcare",
-    description: "Medicines, doctor fees, hospitals, insurance premiums",
-    subgroups: [{ subgroup: "health", split: 1 }],
-  },
-  {
-    key: "education",
-    label: "Education",
-    description: "School / college fees, books, tuitions",
-    subgroups: [{ subgroup: "education_services", split: 1 }],
-  },
+  // ── Division 03 ────────────────────────────────────────────────────────
   {
     key: "clothing",
     label: "Clothing & footwear",
-    description: "Apparel, footwear, tailoring",
+    mospidivision: "Clothing and footwear",
+    description: "Apparel, footwear, tailoring and repair services",
     subgroups: [{ subgroup: "clothing_and_footwear", split: 1 }],
   },
+  // ── Division 04 ────────────────────────────────────────────────────────
   {
-    key: "household_personal",
-    label: "Household & personal care",
-    description: "Furnishings, household goods, toiletries, grooming, personal-care services",
-    subgroups: normalizeSplit([
-      { subgroup: "furnishings_household", split: W.furnishings_household },
-      { subgroup: "personal_care_misc", split: W.personal_care_misc },
-    ]),
+    key: "housing",
+    label: "Housing, water & energy",
+    mospidivision: "Housing, water, electricity, gas and other fuels",
+    description: "Rent (incl. imputed rent if you own), water supply, electricity, cooking gas & other fuels — exclude vehicle fuel",
+    subgroups: [{ subgroup: "housing_utilities", split: 1 }],
   },
+  // ── Division 05 ────────────────────────────────────────────────────────
   {
-    key: "entertainment",
-    label: "Entertainment & recreation",
-    description: "Movies, OTT, sports, hobbies, books, cultural events",
+    key: "furnishings",
+    label: "Furnishings & household",
+    mospidivision: "Furnishings, household equipment and routine household maintenance",
+    description: "Furniture, home appliances, cleaning products, domestic services",
+    subgroups: [{ subgroup: "furnishings_household", split: 1 }],
+  },
+  // ── Division 06 ────────────────────────────────────────────────────────
+  {
+    key: "healthcare",
+    label: "Health",
+    mospidivision: "Health",
+    description: "Medicines, doctor consultations, hospitals, health insurance premiums",
+    subgroups: [{ subgroup: "health", split: 1 }],
+  },
+  // ── Division 07 ────────────────────────────────────────────────────────
+  {
+    key: "transport",
+    label: "Transport",
+    mospidivision: "Transport",
+    description: "Vehicle fuel (petrol/diesel), public transport, auto/taxi, vehicle upkeep & purchase",
+    subgroups: [{ subgroup: "transport", split: 1 }],
+  },
+  // ── Division 08 ────────────────────────────────────────────────────────
+  {
+    key: "communication",
+    label: "Information & communication",
+    mospidivision: "Information and communication",
+    description: "Mobile, broadband, internet, postal services, devices",
+    subgroups: [{ subgroup: "information_communication", split: 1 }],
+  },
+  // ── Division 09 ────────────────────────────────────────────────────────
+  {
+    key: "recreation",
+    label: "Recreation, sport & culture",
+    mospidivision: "Recreation, sport and culture",
+    description: "OTT, movies, sports, hobbies, newspapers, books, cultural events",
     subgroups: [{ subgroup: "recreation_culture", split: 1 }],
   },
+  // ── Division 10 ────────────────────────────────────────────────────────
   {
-    key: "tobacco_alcohol",
-    label: "Tobacco / alcohol",
-    description: "Paan, tobacco, intoxicants",
-    subgroups: [{ subgroup: "pan_tobacco_and_intoxicants", split: 1 }],
+    key: "education",
+    label: "Education",
+    mospidivision: "Education services",
+    description: "School / college fees, tuitions, books & stationery",
+    subgroups: [{ subgroup: "education_services", split: 1 }],
+  },
+  // ── Division 11 ────────────────────────────────────────────────────────
+  {
+    key: "eating_out",
+    label: "Restaurants & accommodation",
+    mospidivision: "Restaurants and accommodation services",
+    description: "Restaurants, cafes, dhabas, food delivery, hotels, guest houses",
+    subgroups: [{ subgroup: "restaurants_accommodation", split: 1 }],
+  },
+  // ── Division 12 ────────────────────────────────────────────────────────
+  {
+    key: "personal_care",
+    label: "Personal care & misc",
+    mospidivision: "Personal care, social protection and miscellaneous goods and services",
+    description: "Toiletries, grooming, haircuts, personal hygiene, social protection, miscellaneous",
+    subgroups: [{ subgroup: "personal_care_misc", split: 1 }],
   },
 ];
 
