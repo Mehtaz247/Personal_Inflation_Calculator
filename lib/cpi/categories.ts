@@ -79,7 +79,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 04 ────────────────────────────────────────────────────────
   {
     key: "housing",
-    label: "Housing, water, electricity, gas and other fuels",
+    label: "Housing, water, electricity, gas",
     mospidivision: "Housing, water, electricity, gas and other fuels",
     description: "Rent (incl. imputed rent if you own), water supply, electricity, cooking gas & other fuels — exclude vehicle fuel",
     subgroups: [{ subgroup: "housing_utilities", split: 1 }],
@@ -87,7 +87,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 05 ────────────────────────────────────────────────────────
   {
     key: "furnishings",
-    label: "Furnishings, household equipment and routine household maintenance",
+    label: "Furniture, household equipment and maintenance",
     mospidivision: "Furnishings, household equipment and routine household maintenance",
     description: "Furniture, home appliances, cleaning products, domestic services",
     subgroups: [{ subgroup: "furnishings_household", split: 1 }],
@@ -135,7 +135,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 11 ────────────────────────────────────────────────────────
   {
     key: "eating_out",
-    label: "Restaurants and accommodation services",
+    label: "Restaurants and accommodation",
     mospidivision: "Restaurants and accommodation services",
     description: "Restaurants, cafes, dhabas, food delivery, hotels, guest houses",
     subgroups: [{ subgroup: "restaurants_accommodation", split: 1 }],
@@ -143,7 +143,7 @@ export const USER_CATEGORIES: UserCategory[] = [
   // ── Division 12 ────────────────────────────────────────────────────────
   {
     key: "personal_care",
-    label: "Personal care, social protection and miscellaneous goods and services",
+    label: "Personal care and miscellaneous services",
     mospidivision: "Personal care, social protection and miscellaneous goods and services",
     description: "Toiletries, grooming, haircuts, personal hygiene, social protection, miscellaneous",
     subgroups: [{ subgroup: "personal_care_misc", split: 1 }],
