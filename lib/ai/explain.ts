@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import type { ComputeResult } from "@/lib/inflation/engine";
 import { geminiApiKeys, withKeyFailover } from "./gemini-keys";
 
-const MODEL = "gemini-3.1-flash-lite-preview";
+const MODEL = "gemini-3.1-pro";
 
 function isUnavailable(err: unknown): boolean {
   const msg = String((err as any)?.message ?? "");
