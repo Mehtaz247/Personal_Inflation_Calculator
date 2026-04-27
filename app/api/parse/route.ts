@@ -184,7 +184,35 @@ Diet:
   eat both meat and fish. If they only mention meat OR fish, skip the
   other field.
 
-If a spending category is not mentioned, omit it or set it to 0. Only output the JSON object.
+Estimation when numbers are missing:
+- The user is describing their lifestyle. They will often give qualitative cues
+  (city, profession, family size, type of housing, vehicle, eating-out habits,
+  hobbies, dependents, schooling, etc.) WITHOUT explicit rupee amounts.
+- In that case, you MUST still produce a plausible monthly INR estimate for
+  every category that fits their described lifestyle — do not leave the basket
+  empty just because numbers are missing. Use Indian middle-class norms as a
+  baseline and adjust up or down using every signal in the text:
+    • Tier-1 metro (Mumbai/Bangalore/Delhi/Hyderabad/Pune/Chennai) → higher
+      housing, transport, eating_out, recreation than a tier-2/3 town.
+    • Family size: a couple with two kids spends more on food, education,
+      healthcare, clothing than a single working professional.
+    • Lifestyle markers: "luxury", "frugal", "student", "retired", "startup
+      founder", "homemaker", "owns a car", "uses metro", "orders Swiggy daily",
+      "cooks at home", "sends kids to private school" should all materially
+      shift the relevant categories.
+    • Owned home vs. renting: imputed rent is usually lower than market rent.
+- Use the explicit numbers the user DOES give as anchors and scale the estimated
+  categories around them so the total feels coherent (e.g. someone paying ₹80k
+  rent in Mumbai is unlikely to spend only ₹2k on groceries).
+- It is fine — and expected — to fabricate reasonable numbers for unmentioned
+  categories. The goal is a complete, realistic monthly basket, not literal
+  transcription. Do not output 0 for a category unless the user clearly said
+  they spend nothing on it (e.g. "I don't drink or smoke" → tobacco_alcohol: 0).
+- Only omit a category entirely if it genuinely does not apply (e.g.
+  food_meat / food_seafood for a vegetarian, education for a single person
+  with no dependents).
+
+Only output the JSON object.
 
 Text to parse:
 """
