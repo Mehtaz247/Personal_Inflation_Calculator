@@ -80,6 +80,22 @@ const responseSchema = z.object({
   diet: z.enum(["veg", "non-veg"]).optional(),
 });
 
+function isUnavailable(err: unknown): boolean {
+  const msg = String((err as any)?.message ?? "");
+  return (err as any)?.status === "UNAVAILABLE" || msg.includes("503") || msg.includes("high demand");
+}
+
+async function withRetry<T>(fn: () => Promise<T>, retries = 2): Promise<T> {
+  for (let i = 0; i <= retries; i++) {
+    try { return await fn(); }
+    catch (err) {
+      if (!isUnavailable(err) || i === retries) throw err;
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+  throw new Error("unreachable");
+}
+
 export async function POST(req: NextRequest) {
   try {
     if (!process.env.GEMINI_API_KEY) {
@@ -158,23 +174,40 @@ ${body.text}
 """
 `;
 
-    const response = await ai.models.generateContent({
+    const response = await withRetry(() => ai.models.generateContent({
       model: "gemini-3.1-flash-lite-preview",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
       },
-    });
+    }));
 
     const text = response.text ?? "";
     if (!text) {
       throw new Error("No response text from Gemini");
     }
 
-    const parsed = responseSchema.parse(JSON.parse(text));
+    // Gemini sometimes returns a 503 as a JSON body instead of throwing
+    let rawJson: unknown;
+    try { rawJson = JSON.parse(text); } catch { throw new Error("Invalid JSON from Gemini"); }
+    if (rawJson && typeof rawJson === "object" && "error" in rawJson) {
+      const geminiErr = (rawJson as any).error;
+      if (geminiErr?.status === "UNAVAILABLE" || geminiErr?.code === 503) {
+        return NextResponse.json(
+          { error: "AI service is busy — please try again in a moment." },
+          { status: 503 },
+        );
+      }
+    }
+
+    const parsed = responseSchema.parse(rawJson);
     return NextResponse.json(parsed);
   } catch (error: any) {
     console.error("AI parse error:", error);
-    return NextResponse.json({ error: error.message || "Failed to parse text" }, { status: 500 });
+    const busy = isUnavailable(error);
+    return NextResponse.json(
+      { error: busy ? "AI service is busy — please try again in a moment." : (error.message || "Failed to parse text") },
+      { status: busy ? 503 : 500 },
+    );
   }
 }

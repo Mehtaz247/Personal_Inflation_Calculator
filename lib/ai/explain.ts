@@ -3,6 +3,22 @@ import type { ComputeResult } from "@/lib/inflation/engine";
 
 const MODEL = "gemini-3.1-flash-lite-preview";
 
+function isUnavailable(err: unknown): boolean {
+  const msg = String((err as any)?.message ?? "");
+  return (err as any)?.status === "UNAVAILABLE" || msg.includes("503") || msg.includes("high demand");
+}
+
+async function withRetry<T>(fn: () => Promise<T>, retries = 2): Promise<T> {
+  for (let i = 0; i <= retries; i++) {
+    try { return await fn(); }
+    catch (err) {
+      if (!isUnavailable(err) || i === retries) throw err;
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+  throw new Error("unreachable");
+}
+
 function pct(n: number): string {
   return `${(n * 100).toFixed(2)}%`;
 }
@@ -104,7 +120,7 @@ export async function generateExplanation(result: ComputeResult): Promise<{
     "piece of financial advice based on their highest positive gap contributor to help them reduce their personal inflation.";
 
   const client = new GoogleGenAI({ apiKey });
-  const response = await client.models.generateContent({
+  const response = await withRetry(() => client.models.generateContent({
     model: MODEL,
     contents: [
       {
@@ -112,8 +128,8 @@ export async function generateExplanation(result: ComputeResult): Promise<{
         parts: [{ text: `${systemPrompt}\n\nFacts:\n${JSON.stringify(facts, null, 2)}` }],
       },
     ],
-    config: { maxOutputTokens: 400, temperature: 0.4 },
-  });
+    config: { maxOutputTokens: 400, temperature: 0.9 },
+  }));
 
   const text = (response.text ?? "").trim();
   if (!text) return { text: deterministicExplanation(result), source: "fallback" };

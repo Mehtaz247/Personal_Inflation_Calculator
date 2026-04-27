@@ -100,6 +100,7 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
   const [diet, setDiet] = useState<Diet>("veg");
   const [aiText, setAiText] = useState("");
   const [parseError, setParseError] = useState<string | null>(null);
+  const [parseBusy, setParseBusy] = useState(false);
   const [isParsing, startParsingTransition] = useTransition();
 
   /* ── State-level async result ── */
@@ -207,6 +208,7 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
   async function handleAiParse() {
     if (!aiText.trim()) return;
     setParseError(null);
+    setParseBusy(false);
     startParsingTransition(async () => {
       try {
         const res = await fetch("/api/parse", {
@@ -234,7 +236,9 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
           }
         } else {
           const err = await res.json().catch(() => ({ error: "Failed to parse your input. Try being more specific about amounts." }));
-          setParseError(err.error || "Something went wrong. Please try again.");
+          const msg = err.error || "Something went wrong. Please try again.";
+          setParseError(msg);
+          setParseBusy(res.status === 503);
         }
       } catch {
         setParseError("Network error. Please check your connection and try again.");
@@ -274,9 +278,21 @@ export default function Calculator({ categories }: { categories: CategoryDescrip
               className="w-full resize-none bg-transparent text-zinc-200 placeholder-zinc-600 outline-none sm:text-lg"
             />
             {parseError && (
-              <div className="mt-2 flex items-start gap-2 rounded-lg bg-rose-950/40 border border-rose-800/50 px-3 py-2 text-sm text-rose-300">
-                <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-rose-400" />
-                <span>{parseError}</span>
+              <div className="mt-2 flex items-start justify-between gap-2 rounded-lg bg-rose-950/40 border border-rose-800/50 px-3 py-2 text-sm text-rose-300">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-rose-400" />
+                  <span>{parseError}</span>
+                </div>
+                {parseBusy && (
+                  <button
+                    type="button"
+                    onClick={handleAiParse}
+                    disabled={isParsing}
+                    className="ml-2 flex-shrink-0 rounded-full bg-rose-800/50 px-2 py-0.5 text-xs font-medium text-rose-200 hover:bg-rose-700/50 disabled:opacity-50"
+                  >
+                    Retry
+                  </button>
+                )}
               </div>
             )}
             <div className="mt-3 flex justify-end">
