@@ -131,7 +131,7 @@ Diet:
   describes themselves as non-vegetarian. Otherwise default to "veg".
   When diet is "non-veg" and the user gives a single combined "food"
   amount with no breakdown, you may make a sensible split: roughly 70%
-  to `food`, 20% to `food_meat`, 10% to `food_seafood` for a typical
+  to "food", 20% to "food_meat", 10% to "food_seafood" for a typical
   Indian non-veg household — but only if the user clearly signals they
   eat both meat and fish. If they only mention meat OR fish, skip the
   other field.
