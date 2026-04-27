@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "dummy",
-});
+import { geminiApiKeys, withKeyFailover } from "@/lib/ai/gemini-keys";
 
 const SECTOR_VALUES = ["combined", "urban", "rural"] as const;
 
@@ -98,7 +95,7 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 2): Promise<T> {
 
 export async function POST(req: NextRequest) {
   try {
-    if (!process.env.GEMINI_API_KEY) {
+    if (geminiApiKeys().length === 0) {
       return NextResponse.json(
         { error: "GEMINI_API_KEY is not set in environment." },
         { status: 500 }
@@ -174,13 +171,16 @@ ${body.text}
 """
 `;
 
-    const response = await withRetry(() => ai.models.generateContent({
-      model: "gemini-3.1-flash-lite-preview",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-      },
-    }));
+    const response = await withKeyFailover((apiKey) => {
+      const ai = new GoogleGenAI({ apiKey });
+      return withRetry(() => ai.models.generateContent({
+        model: "gemini-3.1-flash-lite-preview",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+        },
+      }));
+    });
 
     const text = response.text ?? "";
     if (!text) {

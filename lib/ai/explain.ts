@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import type { ComputeResult } from "@/lib/inflation/engine";
+import { geminiApiKeys, withKeyFailover } from "./gemini-keys";
 
 const MODEL = "gemini-3.1-flash-lite-preview";
 
@@ -53,8 +54,7 @@ export async function generateExplanation(result: ComputeResult): Promise<{
   text: string;
   source: "gemini" | "fallback";
 }> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || result.total_spend === 0) {
+  if (geminiApiKeys().length === 0 || result.total_spend === 0) {
     return { text: deterministicExplanation(result), source: "fallback" };
   }
 
@@ -119,17 +119,19 @@ export async function generateExplanation(result: ComputeResult): Promise<{
     "month in plain English (e.g. 'March 2026'). IMPORTANT: Conclude with ONE actionable, insightful " +
     "piece of financial advice based on their highest positive gap contributor to help them reduce their personal inflation.";
 
-  const client = new GoogleGenAI({ apiKey });
-  const response = await withRetry(() => client.models.generateContent({
-    model: MODEL,
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: `${systemPrompt}\n\nFacts:\n${JSON.stringify(facts, null, 2)}` }],
-      },
-    ],
-    config: { maxOutputTokens: 400, temperature: 0.9 },
-  }));
+  const response = await withKeyFailover((apiKey) => {
+    const client = new GoogleGenAI({ apiKey });
+    return withRetry(() => client.models.generateContent({
+      model: MODEL,
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: `${systemPrompt}\n\nFacts:\n${JSON.stringify(facts, null, 2)}` }],
+        },
+      ],
+      config: { maxOutputTokens: 400, temperature: 0.9 },
+    }));
+  });
 
   const text = (response.text ?? "").trim();
   if (!text) return { text: deterministicExplanation(result), source: "fallback" };
